@@ -244,7 +244,7 @@ Kết quả chạy trên checkpoint `jiaojuncao/MoVE-KD-7b-v1.1` với 6 ảnh: 
 
 - **[CLS] attention ở layer -2 của cả CLIP lẫn student đều dồn gần hết vào vài token đơn lẻ.** Các token này nằm ở vùng nền hoặc ở dải padding xám (do `expand2square`), không nằm trên vật thể chính. Đây chính là các token "artifact" có norm cao mà paper nhắc tới ở Sec 5.2 (cùng hiện tượng với *Vision Transformers Need Registers*). Hệ quả là token weight trong KD (softmax của chính attention này) thực chất chỉ tập trung vào vài vị trí, chứ không trải đều trên vùng có thông tin.
 - **Student gần như giữ nguyên bản đồ attention của CLIP.** Ở cả 6 ảnh, vị trí các đỉnh attention của student trùng với CLIP. Student chỉ bỏ bớt vài đỉnh phụ (ví dụ đỉnh ở biển hiệu và cửa ra vào trong ảnh TextVQA). Với 6 ảnh này, mình **không thấy rõ** hiện tượng như Fig 5 của paper, tức student chuyển hẳn attention từ nền sang vật thể hay chữ. Có thể paper đã chọn ảnh minh hoạ, hoặc dùng layer hay cách chuẩn hoá khác. Khi trình bày, nên nói là "student kế thừa phần lớn attention của CLIP và giảm nhẹ các đỉnh phụ", không nên khẳng định mạnh hơn.
-- **Routing MoLE chuyên môn hoá theo layer nhiều hơn là theo nội dung.** Ở các layer đầu (0–6), token được chia khá đều giữa các expert, và ranh giới giữa expert có liên quan tới vùng ảnh và vùng padding. Từ khoảng layer 10 trở đi, thường có một expert chiếm trên 70–100% token: layer 11 và 18 gần như chỉ dùng Expert 0, layer 22 gần như chỉ dùng Expert 1. Điều này khớp với ghi chú ở `Introduction.md` §2.4: ở chế độ sparse, router chỉ nhận gradient từ balance loss nên dễ suy biến về một expert ở từng layer. Nói cách khác, MoLE ở đây hoạt động gần giống "mỗi layer một LoRA" hơn là "mỗi token một expert".
+- **Routing MoLE chuyên môn hoá theo layer nhiều hơn là theo nội dung.** Ở các layer đầu (0–6), token được trộn chủ yếu giữa Expert 0 và Expert 2 (Expert 1 chỉ nhận khoảng 2–18% token), và ranh giới giữa expert có liên quan tới vùng ảnh và vùng padding. Từ khoảng layer 10 trở đi, thường có một expert chiếm trên 70–100% token: layer 11 và 18 gần như chỉ dùng Expert 0, layer 22 gần như chỉ dùng Expert 1. Điều này khớp với ghi chú ở `Introduction.md` §2.4: ở chế độ sparse, router chỉ nhận gradient từ balance loss nên dễ suy biến về một expert ở từng layer. Nói cách khác, MoLE ở đây hoạt động gần giống "mỗi layer một LoRA" hơn là "mỗi token một expert".
 
 ### 2.5 Kết quả tự chạy lại
 
@@ -257,7 +257,7 @@ Kết quả chạy trên checkpoint `jiaojuncao/MoVE-KD-7b-v1.1` với 6 ảnh: 
 | POPE (F1 trung bình) | 8910 | 42 phút | 86.3 | **86.06** | −0.2 |
 | MME (perception) | 2374 | 12 phút | 1509.1 | **1510.0** | +0.9 |
 | TextVQA | 5000 | 35 phút | 59.6 | **59.62** | +0.0 |
-| SQA-IMG | 4241 | 16 phút | 69.8 | **69.81** | +0.0 |
+| SQA-IMG | 4241 (điểm tính trên 2017 câu có ảnh) | 16 phút | 69.8 | **69.81** | +0.0 |
 
 Chi tiết:
 
@@ -267,7 +267,7 @@ Chi tiết:
 
 ![Kết quả tái lập](images/results_reproduced_llava-move-kd-7b-v1.1.png)
 
-**Kết luận: tái lập thành công.** Cả 4 benchmark đều lệch không quá 0.2 điểm, riêng MME lệch 0.9 trên thang khoảng 2000. Checkpoint công bố đúng là mô hình được báo cáo trong paper, và pipeline eval trong `scripts/move-kd/eval/` cho kết quả chính xác. Phần chênh nhỏ ở POPE và MME nằm trong mức dao động bình thường do phần cứng và kernel fp16 khác nhau.
+**Kết luận: tái lập thành công.** Cả 4 benchmark đều lệch dưới 0.3 điểm (POPE lệch 0.24, TextVQA và SQA lệch 0.02 và 0.01), riêng MME lệch 0.9 trên thang khoảng 2000. Checkpoint công bố đúng là mô hình được báo cáo trong paper, và pipeline eval trong `scripts/move-kd/eval/` cho kết quả chính xác. Phần chênh nhỏ ở POPE và MME nằm trong mức dao động bình thường do phần cứng và kernel fp16 khác nhau.
 
 > Bảng và biểu đồ `images/results_reproduced_<tên>.png` được sinh tự động bằng lệnh `python scripts/move-kd/summarize_results.py --name llava-move-kd-7b-v1.1`. Chênh lệch dưới khoảng 1 điểm (MME dưới khoảng 15 điểm) có thể coi là tái lập thành công, vì có sai khác do phần cứng, phiên bản thư viện và fp16 khi suy luận.
 
@@ -289,6 +289,8 @@ Nhận xét:
 1. **Baseline khớp paper ở 3/4 benchmark.** TextVQA và POPE trùng tới 0.1, MME lệch −6.1 (dưới 0.5% thang điểm).
 2. **SQA là ngoại lệ: baseline tự chạy cao hơn paper 2.7 điểm (69.46 so với 66.8).** Bộ chấm SQA đã được kiểm chứng ở ý 7 mục 2.6 (chấm lại câu trả lời LLaVA-1.5-13B ra đúng 71.6), nên chênh lệch nằm ở bước sinh câu trả lời. Một khả năng là con số 66.8 được đo bằng phiên bản code hoặc prompt cũ hơn so với `model_vqa_science` + `--single-pred-prompt` hiện tại. Mình chưa kiểm chứng giả thuyết này.
 3. **Hệ quả cho kết luận của paper.** So với baseline tự chạy, MoVE-KD vẫn tăng ở cả 4 benchmark, nhưng mức tăng ở SQA giảm từ +3.0 (paper) xuống **+0.4**. Mức tăng rõ nhất còn lại là **TextVQA +1.4**, phù hợp với lập luận rằng các teacher (EVA-02, ConvNeXt độ phân giải cao, SAM) bổ sung chi tiết cục bộ và chữ trong ảnh. POPE (+0.1) và MME (+5.4) chỉ tăng nhẹ, ở mức gần với dao động khi chạy lại.
+
+   Mức +0.35 ở SQA không có ý nghĩa thống kê: trên 2017 câu có ảnh, MoVE-KD đúng 1408 câu, baseline đúng 1401 câu. Đếm từng câu thì có 113 câu MoVE-KD đúng mà baseline sai, và 106 câu ngược lại (kiểm định McNemar, p ≈ 0.64).
 
 **Smoke-test pipeline huấn luyện** (`scripts/move-kd/smoke_pretrain.sh`): chạy Stage 1 với đủ 4 teacher (CLIP, SAM, EVA-02, ConvNeXt), nhưng thay Vicuna-7B bằng TinyLlama-1.1B, 100 mẫu LCS-558K, 30 bước, batch 2. Mục tiêu là xác nhận forward KD, backward và việc lưu checkpoint đều chạy được trên 1 GPU, **không** nhằm tái lập số liệu.
 

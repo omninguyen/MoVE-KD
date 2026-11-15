@@ -2,6 +2,11 @@
 [【CVPR 2025】MoVE-KD: Knowledge Distillation for VLMs with Mixture of Visual Encoders](https://arxiv.org/abs/2501.01709)  
 [Jiajun Cao](https://scholar.google.com.hk/citations?user=femNsd0AAAAJ&hl=zh-CN), [Yuan Zhang](https://scholar.google.com.hk/citations?hl=zh-CN&user=dXj1WskAAAAJ), [Tao Huang](https://scholar.google.com.hk/citations?user=jkcRdBgAAAAJ&hl=zh-CN), Ming Lu, Qizhe Zhang, Ruichuan An, Ningning MA, [Shanghang Zhang](https://scholar.google.com.hk/citations?user=voqw10cAAAAJ&hl=zh-CN)
 
+> **Đồ án môn học:** tài liệu và code của nhóm nằm ở các file sau.
+> - [`Introduction.md`](Introduction.md): Introduction và Methodology (TV1)
+> - [`Experiments.md`](Experiments.md), [`TV3.md`](TV3.md): Related Work, kết quả tái lập, trực quan hoá, sửa lỗi huấn luyện (TV3)
+> - [`demo/README.md`](demo/README.md): demo và video so sánh MoVE-KD với LLaVA-1.5
+
 ## Overview
 ![overview](./images/pipeline.png)
 

@@ -1,0 +1,6 @@
+[
+ {"image": "llava/serve/examples/extreme_ironing.jpg", "question": "What is unusual about this image?"},
+ {"image": "llava/serve/examples/extreme_ironing.jpg", "question": "What color is the man's shirt, and what is he standing on?"},
+ {"image": "llava/serve/examples/waterview.jpg", "question": "What are the things I should be cautious about when I visit here?"},
+ {"image": "llava/serve/examples/waterview.jpg", "question": "Is there a boat in the image? Answer yes or no."}
+]

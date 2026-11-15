@@ -1,0 +1,47 @@
+% =====================================================================
+% Mục Công trình liên quan (TV3) — dán vào main.tex, giữa Giới thiệu và Phương pháp.
+% Cần: \usepackage{booktabs,tabularx} và \bibliography{...,related_work}.
+% =====================================================================
+\section{Công trình liên quan}
+\label{sec:related}
+
+\subsection{Mô hình ngôn ngữ--thị giác}
+
+Hầu hết VLM hiện nay theo khuôn \emph{encoder $\rightarrow$ khối kết nối $\rightarrow$ LLM}: một vision encoder tiền huấn luyện, thường là CLIP~\cite{radford2021clip}, trích đặc trưng ảnh; khối kết nối đưa đặc trưng vào không gian embedding của LLM; sau đó cả hệ được huấn luyện trên dữ liệu ảnh--văn bản. Các mô hình khác nhau chủ yếu ở khối kết nối. Flamingo~\cite{alayrac2022flamingo} chèn các lớp gated cross-attention vào LLM đóng băng; BLIP-2~\cite{li2023blip2} và InstructBLIP~\cite{dai2023instructblip} dùng Q-Former nén ảnh thành một số ít query; Qwen-VL~\cite{bai2023qwenvl} dùng adapter cross-attention một lớp. LLaVA~\cite{liu2023llava} và LLaVA-1.5~\cite{liu2024improved} chọn cách đơn giản nhất: chiếu toàn bộ patch token bằng MLP hai lớp, huấn luyện hai giai đoạn trên LCS-558K và mix665k. LLaVA-NeXT~\cite{liu2024llavanext} bổ sung AnyRes, cắt ảnh độ phân giải cao thành nhiều ô. MoVE-KD giữ nguyên kiến trúc và dữ liệu của LLaVA-1.5, chỉ thay đổi cách huấn luyện vision encoder, nên LLaVA-1.5 là baseline trực tiếp của mọi so sánh.
+
+\subsection{Tăng cường vision encoder}
+
+Năng lực của VLM bị giới hạn bởi chất lượng encoder, đặc biệt ở các tác vụ cần chi tiết như đọc chữ hay định vị vật thể. Hướng thứ nhất là \emph{tăng độ phân giải}: S$^2$~\cite{shi2024s2} chạy cùng một encoder ở nhiều tỉ lệ ảnh, còn LLaVA-NeXT tăng số ô ảnh. Hướng thứ hai là \emph{ghép nhiều encoder} có thế mạnh bổ sung nhau, như EVA-02~\cite{fang2024eva02} cho nhận dạng, ConvNeXt~\cite{liu2022convnext} cho ảnh độ phân giải cao và SAM~\cite{kirillov2023sam} cho phân đoạn. Mini-Gemini~\cite{li2024minigemini} thêm một nhánh ConvNeXt độ phân giải cao; SPHINX~\cite{lin2023sphinx} trộn embedding của nhiều encoder; Eagle~\cite{shi2024eagle} khảo sát có hệ thống các tổ hợp CLIP, ConvNeXt, EVA-02, Pix2Struct, SAM và cho thấy nối kênh đơn giản đã hiệu quả; Cambrian-1~\cite{tong2024cambrian} đề xuất Spatial Vision Aggregator. MoVE-KD chọn bộ teacher theo kết quả của Eagle.
+
+Điểm chung của các hướng trên là \emph{tăng chi phí suy luận}: thêm token, thêm độ phân giải hoặc phải chạy nhiều encoder cho mỗi ảnh. MoVE-KD đi theo hướng ngược lại: các encoder chỉ tham gia lúc huấn luyện với vai trò teacher, còn lúc suy luận chỉ còn một CLIP ViT-L/14-336 cùng một lượng nhỏ tham số LoRA.
+
+\subsection{Chưng cất tri thức}
+
+\textbf{KD cổ điển.} Hinton và cộng sự~\cite{hinton2015distilling} cho student học phân phối đầu ra mềm của teacher; FitNets~\cite{romero2015fitnets} mở rộng sang chưng cất đặc trưng trung gian qua một lớp chiếu. MoVE-KD thuộc nhánh chưng cất đặc trưng, dùng MSE giữa token của student và token teacher sau encoder adapter.
+
+\textbf{KD cho vision encoder.} DINOv2~\cite{oquab2024dinov2} dùng self-distillation, Feature Distillation~\cite{wei2022fd} chưng cất từ một teacher CLIP. Gần MoVE-KD nhất là các phương pháp \emph{gộp nhiều teacher}: AM-RADIO~\cite{ranzinger2024radio} chưng cất đồng thời CLIP, DINOv2 và SAM vào một ViT trên DataComp-1B rồi dùng encoder đó trong LLaVA; Theia~\cite{shang2024theia} và UNIC~\cite{sariyildiz2024unic} cũng chưng cất đa teacher. Các phương pháp này chưng cất \emph{trước và độc lập} với VLM, cần thêm dữ liệu lớn; MoVE-KD chưng cất \emph{trong} quá trình huấn luyện VLM, cộng loss KD vào loss sinh văn bản và chỉ dùng dữ liệu của LLaVA.
+
+\textbf{KD nhiều teacher.} You và cộng sự~\cite{you2017multiple} huấn luyện student dưới giám sát của nhiều teacher; OneS~\cite{xue2022ones} gom tri thức từ nhiều expert vào một mô hình dày đặc; LLaVA-MoD~\cite{shu2024llavamod} chưng cất kiểu MoE nhưng ở phía LLM. Theo các tác giả, MoVE-KD là công trình đầu tiên chưng cất nhiều vision encoder để cải thiện VLM~\cite{cao2025movekd}.
+
+\textbf{Trọng số token.} Ý tưởng không chưng cất mọi vị trí như nhau đã có ở Masked Distillation with Receptive Tokens~\cite{huang2023mdrt}. Darcet và cộng sự~\cite{darcet2024registers} chỉ ra các token ``artifact'' có attention cao nằm ở vùng nền của ViT. MoVE-KD dùng [CLS] attention của CLIP làm trọng số token và cố ý giữ các token này.
+
+\subsection{Mixture-of-Experts và LoRA}
+
+MoE~\cite{jacobs1991adaptive,fedus2022switch} dùng router chỉ kích hoạt một phần expert cho mỗi token, tăng dung lượng mô hình mà chi phí tính toán gần như không đổi. Trong VLM, MoE-LLaVA~\cite{lin2024moellava} và Uni-MoE~\cite{li2024unimoe} đưa MoE vào LLM. LoRA~\cite{hu2022lora} học phần bù hạng thấp $\Delta W = BA$ cho trọng số đóng băng; kết hợp hai ý tưởng cho ra hỗn hợp LoRA expert như LoRAMoE~\cite{dou2024loramoe} và MoLE~\cite{wu2024mole}. MoVE-KD áp dụng MoLE vào \emph{vision encoder}, để các expert chia nhau phần tri thức khi student học đồng thời từ nhiều teacher có không gian đặc trưng khác nhau.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\caption{So sánh MoVE-KD với các hướng gần nhất.}
+\label{tab:related}
+\begin{tabularx}{\columnwidth}{@{}>{\raggedright\arraybackslash}X ccc@{}}
+\toprule
+Phương pháp & Số encoder & Thêm dữ liệu & KD trong VLM \\
+\midrule
+Eagle, Cambrian & Nhiều & Tuỳ & -- \\
+AM-RADIO, Theia & 1 & Có & Không \\
+\textbf{MoVE-KD} & \textbf{1 + MoLE} & \textbf{Không} & \textbf{Có} \\
+\bottomrule
+\end{tabularx}
+\end{table}

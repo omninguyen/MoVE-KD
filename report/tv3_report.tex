@@ -361,7 +361,7 @@ Repo gốc không có code vẽ Fig~5 của paper, nên chúng tôi viết \code
 
 \subsection{Smoke-test Stage 1}
 
-Huấn luyện đầy đủ cần khoảng 8$\times$A100 nên không khả thi. Để kiểm tra code huấn luyện, chúng tôi chạy \code{scripts/move-kd/smoke_pretrain.sh}: Stage~1 với đủ 4 teacher (CLIP, SAM, EVA-02, ConvNeXt), MoLE 3 expert và encoder adapter, nhưng thay Vicuna-7B bằng TinyLlama-1.1B, dùng 100 mẫu LCS-558K, 30 bước, batch 2.
+Paper huấn luyện trên 16$\times$A800 nên huấn luyện lại đầy đủ là không khả thi. Để kiểm tra code huấn luyện, chúng tôi chạy \code{scripts/move-kd/smoke_pretrain.sh}: Stage~1 với đủ 4 teacher (CLIP, SAM, EVA-02, ConvNeXt), MoLE 3 expert và encoder adapter, nhưng thay Vicuna-7B bằng TinyLlama-1.1B, dùng 100 mẫu LCS-558K, 30 bước, batch 2.
 
 \begin{itemize}
 \item Chạy hết 30 bước trong 2 phút trên RTX 3090, VRAM đỉnh 17.8GB.

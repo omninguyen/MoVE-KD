@@ -1,0 +1,5 @@
+[2026-10-31 04:53:25,174] [INFO] [real_accelerator.py:161:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+llava-move-kd-7b-v1.1
+Samples: 5000
+Accuracy: 59.62%
+

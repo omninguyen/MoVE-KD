@@ -1,0 +1,30 @@
+Category: random, # samples: 50
+TP	FP	TN	FN	
+20	1	23	6
+Accuracy: 0.86
+Precision: 0.9523809523809523
+Recall: 0.7692307692307693
+F1 score: 0.8510638297872339
+Yes ratio: 0.42
+0.851, 0.860, 0.952, 0.769, 0.420
+====================================
+Category: popular, # samples: 50
+TP	FP	TN	FN	
+19	2	23	6
+Accuracy: 0.84
+Precision: 0.9047619047619048
+Recall: 0.76
+F1 score: 0.8260869565217391
+Yes ratio: 0.42
+0.826, 0.840, 0.905, 0.760, 0.420
+====================================
+Category: adversarial, # samples: 50
+TP	FP	TN	FN	
+19	5	20	6
+Accuracy: 0.78
+Precision: 0.7916666666666666
+Recall: 0.76
+F1 score: 0.7755102040816326
+Yes ratio: 0.48
+0.776, 0.780, 0.792, 0.760, 0.480
+====================================
